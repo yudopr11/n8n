@@ -26,7 +26,7 @@ x-shared:
     N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
   links:
     - redis
-    - pgduckdb
+    - vectorduck
   volumes:
     - n8n_data:/home/node/.n8n
 
@@ -39,7 +39,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      pgduckdb:
+      vectorduck:
         condition: service_healthy
 
   n8n-worker:
@@ -62,10 +62,10 @@ services:
       timeout: 3s
       retries: 5
 
-  pgduckdb:
+  vectorduck:
     build: .
-    image: my-pgduckdb:latest
-    container_name: pgduckdb
+    image: vectorduck:latest
+    container_name: vectorduck
     environment:
       POSTGRES_DB: ${DB_POSTGRESDB_DB:-postgres}
       POSTGRES_USER: ${DB_POSTGRESDB_USER:-postgres}
@@ -74,7 +74,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgduckdb_data:/var/lib/postgresql/data
+      - vectorduck_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
       - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
     restart: always
@@ -89,4 +89,4 @@ services:
 volumes:
   n8n_data:
   redis_data:
-  pgduckdb_data:
+  vectorduck_data:
