@@ -64,7 +64,7 @@ services:
 
   vectorduck:
     build: .
-    image: vectorduck:latest
+    image: yudopr/vectorduck:latest
     container_name: vectorduck
     environment:
       POSTGRES_DB: ${DB_POSTGRESDB_DB:-postgres}

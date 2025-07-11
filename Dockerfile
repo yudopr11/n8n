@@ -38,5 +38,10 @@ RUN chown -R postgres:postgres \
     /docker-entrypoint-initdb.d/ \
     /etc/postgresql/postgresql.conf
 
+RUN mkdir -p /var/lib/postgresql/data \
+&& chown -R postgres:postgres /var/lib/postgresql \
+&& chmod -R 700 /var/lib/postgresql/data
+
 USER postgres
 
+CMD ["postgres"]
