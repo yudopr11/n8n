@@ -4,7 +4,7 @@ x-shared:
   restart: always
   environment:
     DB_TYPE: postgresdb
-    DB_POSTGRESDB_DATABASE: ${DB_POSTGRES_DB}
+    DB_POSTGRESDB_DATABASE: ${DB_POSTGRESDB_DB}
     DB_POSTGRESDB_HOST: ${DB_POSTGRESDB_HOST}
     DB_POSTGRESDB_PORT: ${DB_POSTGRESDB_PORT}
     DB_POSTGRESDB_USER: ${DB_POSTGRESDB_USER}
@@ -67,7 +67,7 @@ services:
     image: my-pgduckdb:latest
     container_name: pgduckdb
     environment:
-      POSTGRES_DB: ${DB_POSTGRES_DB:-postgres}
+      POSTGRES_DB: ${DB_POSTGRESDB_DB:-postgres}
       POSTGRES_USER: ${DB_POSTGRESDB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_POSTGRESDB_PASSWORD:-postgres}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
@@ -79,7 +79,7 @@ services:
       - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${DB_POSTGRESDB_USER} -d $${DB_POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${DB_POSTGRESDB_USER} -d $${DB_POSTGRESDB_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
