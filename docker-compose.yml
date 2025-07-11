@@ -1,0 +1,91 @@
+x-shared:
+  &n8n-shared
+  image: docker.n8n.io/n8nio/n8n:latest
+  restart: always
+  environment:
+    DB_TYPE: postgresdb
+    DB_POSTGRESDB_DATABASE: ${DB_POSTGRES_DB}
+    DB_POSTGRESDB_HOST: ${DB_POSTGRESDB_HOST}
+    DB_POSTGRESDB_PORT: ${DB_POSTGRESDB_PORT}
+    DB_POSTGRESDB_USER: ${DB_POSTGRESDB_USER}
+    DB_POSTGRESDB_PASSWORD: ${DB_POSTGRESDB_PASSWORD}
+    DB_POSTGRESDB_SCHEMA: public
+
+    EXECUTIONS_MODE: queue
+    QUEUE_BULL_REDIS_HOST: redis
+    QUEUE_HEALTH_CHECK_ACTIVE: true
+
+    GENERIC_TIMEZONE: Asia/Jakarta
+    TZ: Asia/Jakarta
+
+    N8N_RUNNERS_ENABLED: true
+    OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: true
+    N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+    N8N_SECURE_COOKIE: false
+    EXECUTIONS_DATA_PRUNE: true
+    N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+  links:
+    - redis
+  volumes:
+    - n8n_data:/home/node/.n8n
+
+services:
+  n8n:
+    <<: *n8n-shared
+    container_name: n8n
+    ports:
+      - 5678:5678
+    depends_on:
+      redis:
+        condition: service_healthy
+      pgduckdb:
+        condition: service_healthy
+
+  n8n-worker:
+    <<: *n8n-shared
+    container_name: n8n-worker
+    command: worker
+    depends_on:
+      n8n:
+        condition: service_started
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  pgduckdb:
+    build: .
+    image: my-pgduckdb:latest
+    container_name: pgduckdb
+    environment:
+      POSTGRES_DB: ${DB_POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${DB_POSTGRESDB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_POSTGRESDB_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgduckdb_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_POSTGRESDB_USER} -d $${DB_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: 256m
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+volumes:
+  n8n_data:
+  redis_data:
+  pgduckdb_data:
