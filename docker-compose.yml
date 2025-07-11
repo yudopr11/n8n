@@ -26,6 +26,7 @@ x-shared:
     N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
   links:
     - redis
+    - pgduckdb
   volumes:
     - n8n_data:/home/node/.n8n
 
