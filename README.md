@@ -102,7 +102,6 @@ SELECT duckdb.query('SELECT * FROM duck_test');
 ### Ports
 
 - PostgreSQL: `5432`
-- pgAdmin: `8080` (optional, for database management)
 
 ### Volume Mounts
 
