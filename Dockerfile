@@ -43,5 +43,4 @@ RUN mkdir -p /var/lib/postgresql/data \
 && chmod -R 700 /var/lib/postgresql/data
 
 USER postgres
-
-CMD ["postgres"]
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
